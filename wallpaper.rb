@@ -21,7 +21,7 @@ end
 
 
 if opts[:bgopts]
-  market = opts[:bgopts]
+  bgopts = opts[:bgopts]
 else
   bgopts = "centered"
 end
