@@ -1,0 +1,14 @@
+GEM
+  remote: https://rubygems.org/
+  specs:
+    rmagick (2.13.2)
+    trollop (2.0)
+    xml-simple (1.1.2)
+
+PLATFORMS
+  ruby
+
+DEPENDENCIES
+  rmagick
+  trollop
+  xml-simple
