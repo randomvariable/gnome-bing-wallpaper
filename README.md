@@ -6,6 +6,8 @@ In addition, it will set the background colour to the average pixel in the image
 
 Don't have a directory called ".wallpaper". It will delete its contents.
 
+Based on a Bash script by [SeanKD](http://ubuntuforums.org/showthread.php?t=2074098)
+
 
 Options
 -------
