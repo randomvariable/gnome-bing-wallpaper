@@ -1,6 +1,7 @@
 GEM
   remote: https://rubygems.org/
   specs:
+    facter (1.7.3)
     rmagick (2.13.2)
     trollop (2.0)
     xml-simple (1.1.2)
@@ -9,6 +10,7 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
+  facter
   rmagick
   trollop
   xml-simple
