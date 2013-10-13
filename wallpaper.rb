@@ -4,7 +4,6 @@ require 'bundler/setup'
 require 'net/http'
 require 'xmlsimple'
 require 'fileutils'
-require 'RMagick'
 require 'trollop'
 require "facter"
 require "open3"
@@ -46,23 +45,33 @@ data['image'].each do |image|
     url = "http://www.bing.com" + (image['url'])[0]
     url["1366x768"]="1920x1200"
     image_data = Net::HTTP.get_response(URI.parse(url)).body
-    img = Magick::Image::from_blob(image_data).first
-    resized_image = img.resize_to_fit(1920,1200)
-    color = img.resize(1,1).pixel_color(0,0).to_color(compliance=Magick::AllCompliance,hex=true)
-    file = "#{wallpaperdir}" + "/" + "#{index}.png"
-    resized_image.write(file)
+    filename = "#{wallpaperdir}" + "/" + "#{index}.png"
     case Facter.value(:osfamily)
     when 'Windows'
        # fds
     when 'Linux'
-        system("gsettings set org.gnome.desktop.background picture-uri file://#{file}")
-        system("gsettings set org.gnome.desktop.background picture-options #{bgopts}")
-        system("gsettings set org.gnome.desktop.background primary-color #{color}")
-    when 'Darwin'
- 
-        osascript = "-e \"tell application \\\"System Events\\\" to set picture of every desktop to \\\"#{file}\\\"\""
-        system("osascript #{osascript}")
-      
+      require 'RMagick'
+      img = Magick::Image::from_blob(image_data).first
+      resized_image = img.resize_to_fit(1920,1200)
+      color = img.resize(1,1).pixel_color(0,0).to_color(compliance=Magick::AllCompliance,hex=true)
+      resized_image.write(filename)
+      system("gsettings set org.gnome.desktop.background picture-uri file://#{file}")
+      system("gsettings set org.gnome.desktop.background picture-options #{bgopts}")
+      system("gsettings set org.gnome.desktop.background primary-color #{color}")
+    when 'Darwin' 
+      begin
+        file = File.open(filename, "w")
+        file.write(image_data) 
+      rescue IOError => e
+        #some error occur, dir not writable etc.
+      ensure
+        file.close unless file == nil
+      end
+      tempBackground = '/Library/Desktop Pictures/Solid Colors/Solid Gray Light.png'
+      osascript = "-e \"tell application \\\"System Events\\\" to set picture of every desktop to \\\"#{tempBackground}\\\"\""
+      system("osascript #{osascript}")
+      osascript = "-e \"tell application \\\"System Events\\\" to set picture of every desktop to \\\"#{filename}\\\"\""
+      system("osascript #{osascript}")
    else
         # fsd
     end      
