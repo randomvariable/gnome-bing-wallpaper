@@ -31,33 +31,34 @@ xml_data = Net::HTTP.get_response(URI.parse(url)).body
 wallpaperdir = ENV['HOME']+'/.wallpaper'
 data = XmlSimple.xml_in(xml_data)
 
-if File.directory?("#{wallpaperdir}")
-  FileUtils.rm Dir["#{wallpaperdir}/*"]
- 
-
-else
+if not File.directory?("#{wallpaperdir}")
   FileUtils.mkdir_p("#{wallpaperdir}")
 end
 
 index = 1
+urlfile = "#{wallpaperdir}/lasturl.txt"
 
 data['image'].each do |image|
     url = "http://www.bing.com" + (image['url'])[0]
     url["1366x768"]="1920x1200"
+    if (File.exists?(urlfile) && (File.read(urlfile).intern == url.intern))
+      exit
+    end
+    FileUtils.rm Dir["#{wallpaperdir}/*"]
     image_data = Net::HTTP.get_response(URI.parse(url)).body
     filename = "#{wallpaperdir}" + "/" + "#{index}.png"
     case Facter.value(:osfamily)
     when 'Windows'
        # fds
-    when 'Linux'
+    when 'Linux', 'RedHat'
       require 'RMagick'
       img = Magick::Image::from_blob(image_data).first
       resized_image = img.resize_to_fit(1920,1200)
       color = img.resize(1,1).pixel_color(0,0).to_color(compliance=Magick::AllCompliance,hex=true)
       resized_image.write(filename)
-      system("gsettings set org.gnome.desktop.background picture-uri file://#{file}")
+      system("gsettings set org.gnome.desktop.background picture-uri file://#{filename}")
       system("gsettings set org.gnome.desktop.background picture-options #{bgopts}")
-      system("gsettings set org.gnome.desktop.background primary-color #{color}")
+     # system("gsettings set org.gnome.desktop.background primary-color #{color}")
     when 'Darwin' 
       begin
         file = File.open(filename, "w")
@@ -74,7 +75,8 @@ data['image'].each do |image|
       system("osascript #{osascript}")
    else
         # fsd
-    end      
+    end     
+    File.open(urlfile, 'w') { |file| file.write(url) }
       
 end
 
